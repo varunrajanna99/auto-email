@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 EMAIL = os.getenv('EMAIL')
+FORWARD_MAIL_TO = os.getenv('FORWARD_MAIL_TO')
 PASSWORD = os.getenv('PASSWORD')
 PORT = os.getenv('PORT')
 
@@ -54,9 +55,22 @@ Note: do not reply this is a system generated email using python
         with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message)
+            
+        message = f"""\
+Subject: {parsed_email["Subject"]}
+
+Hi Varun, you have recieved a email from {parsed_email["From"]}
+
+check your inbox for details
+"""
+        
+        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, FORWARD_MAIL_TO, message)
 except poplib.error_proto as e:
     logging.error(e)
 except Exception as e:
     logging.error(e)
 finally:
     pop_conn.quit()
+    
